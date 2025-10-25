@@ -1,0 +1,16 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")  // we’ll set this in .env
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       String @id @map("_id") @default(auto()) @db.ObjectId
+  name     String
+  email    String @unique
+  password String
+}
