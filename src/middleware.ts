@@ -19,7 +19,7 @@ export async function middleware(req:NextRequest) {
   }
 
   if (token && pathname.startsWith("/auth")) {
-    return NextResponse.redirect(new URL("/interview", req.url))
+    return NextResponse.redirect(new URL("/dashboard", req.url))
   }
      return NextResponse.next()
 }

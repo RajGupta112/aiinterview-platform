@@ -35,7 +35,7 @@ export default function SigninPage() {
       toast.error("Invalid credentials ❌")
     } else {
       toast.success("Welcome back 🎉")
-      router.push("/")
+      router.push("/dashboard")
     }
   }
 
