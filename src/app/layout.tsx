@@ -4,27 +4,28 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Toaster } from "sonner"
-import Navbar from "@/components/Navbar"
+import ClientLayout from "@/components/components/ClientLayout"  // ✅ correct import
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "AIVue - Master Your Interviews with AI",
-  description: "Experience realistic AI-powered interviews and get feedback that helps you shine in the real one.",
+  description:
+    "Experience realistic AI-powered interviews and get feedback that helps you shine in the real one.",
   generator: "v0.app",
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
-        {children}
-        <Navbar/>
+      <body className="font-sans antialiased">
+        {/* ✅ client-side layout wrapper */}
+        <ClientLayout>{children}</ClientLayout>
         <Toaster position="top-center" richColors closeButton />
         <Analytics />
       </body>
