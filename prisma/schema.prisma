@@ -1,7 +1,6 @@
-// prisma/schema.prisma
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")  // we’ll set this in .env
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -13,4 +12,12 @@ model User {
   name     String
   email    String @unique
   password String
+}
+
+model InterviewSession {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?
+  startedAt DateTime @default(now())
+  messages  Json[]
+  score     Float?
 }

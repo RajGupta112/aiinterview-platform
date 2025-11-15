@@ -12,11 +12,11 @@ export default async function dashboard() {
   }
 
   return(
-    <SessionProviderWrapper session={session}>
+   
         <div className="p-6">
       <DashboardClient user={session.user}/>
     </div>
-    </SessionProviderWrapper>
+   
    
   )
   
