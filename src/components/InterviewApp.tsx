@@ -5,42 +5,9 @@ import { TranscriptEntry } from "@/lib/index";
 import UserCard from "@/components/UserCard";
 import Solution from "@/components/Rahul";
 import TranscriptLog from "@/components/TranscriptLog";
-import { initializeChat, sendMessage } from "@/lib/ai";
+import { sendMessage } from "@/lib/ai";
 
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-}
-interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-interface SpeechRecognitionResult {
-  length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-  isFinal: boolean;
-}
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-interface SpeechRecognitionType {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  onstart: () => void;
-  onend: () => void;
-  onresult: (event: SpeechRecognitionEvent) => void;
-  onerror: (event: Event) => void;
-  start(): void;
-  stop(): void;
-  abort(): void;
-}
-
-/* ------------------------------------------------------------------
-   UPDATED CONTROLS COMPONENT (WITH GRADIENT START + RED STOP)
------------------------------------------------------------------- */
+/* -------------------- Controls Component -------------------- */
 const Controls: React.FC<{
   isInterviewStarted: boolean;
   onStart: () => void;
@@ -48,8 +15,6 @@ const Controls: React.FC<{
 }> = ({ isInterviewStarted, onStart, onStop }) => {
   return (
     <div className="flex items-center gap-4">
-
-      {/* START BUTTON — gradient green/white */}
       {!isInterviewStarted && (
         <button
           onClick={onStart}
@@ -64,7 +29,6 @@ const Controls: React.FC<{
         </button>
       )}
 
-      {/* STOP BUTTON — red gradient */}
       {isInterviewStarted && (
         <button
           onClick={onStop}
@@ -82,9 +46,7 @@ const Controls: React.FC<{
   );
 };
 
-/* ------------------------------------------------------------------
-   INTERVIEW APP (FULL FILE YOU PROVIDED)
------------------------------------------------------------------- */
+/* -------------------- InterviewApp Component -------------------- */
 const InterviewApp: React.FC = () => {
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -95,19 +57,20 @@ const InterviewApp: React.FC = () => {
   const [currentTranscript, setCurrentTranscript] = useState("");
   const [lastAITranscript, setLastAITranscript] = useState("");
 
-  const chatRef = useRef<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const recognitionRef = useRef<SpeechRecognitionType | null>(null);
+  const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const shouldListenRef = useRef(false);
 
+  /* -------------------- Setup speech synthesis -------------------- */
   useEffect(() => {
     if (typeof window !== "undefined") {
       synthRef.current = window.speechSynthesis;
     }
   }, []);
 
+  /* -------------------- Initialize speech recognition -------------------- */
   const initRecognition = useCallback(() => {
     if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
       alert("Speech Recognition not supported.");
@@ -117,7 +80,7 @@ const InterviewApp: React.FC = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-    const recognition: SpeechRecognitionType = new SpeechRecognition();
+    const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
     recognition.continuous = true;
     recognition.interimResults = false;
@@ -130,7 +93,7 @@ const InterviewApp: React.FC = () => {
       setTimeout(() => recognitionRef.current?.start(), 800);
     };
 
-    recognition.onresult = async (event) => {
+    recognition.onresult = async (event: any) => {
       if (!shouldListenRef.current) return;
 
       const lastResult = event.results[event.results.length - 1];
@@ -156,13 +119,12 @@ const InterviewApp: React.FC = () => {
     } catch {}
   };
 
+  /* -------------------- Handle AI Response -------------------- */
   const handleAIResponse = async (userText: string) => {
-    if (!chatRef.current) return;
-
     setIsThinking(true);
 
     try {
-      const aiResponse = await sendMessage(chatRef.current, userText);
+      const aiResponse = await sendMessage(userText, transcript); // <-- IMPORTANT!!
       setIsThinking(false);
       setLastAITranscript(aiResponse);
 
@@ -174,9 +136,9 @@ const InterviewApp: React.FC = () => {
     }
   };
 
+  /* -------------------- Pick Male Voice -------------------- */
   const pickMaleVoice = () => {
     const voices = window.speechSynthesis.getVoices();
-
     const priority = [
       "Google UK English Male",
       "Google US English",
@@ -224,6 +186,7 @@ const InterviewApp: React.FC = () => {
     synthRef.current.speak(utter);
   };
 
+  /* -------------------- Start Camera -------------------- */
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -231,16 +194,14 @@ const InterviewApp: React.FC = () => {
     } catch {}
   };
 
+  /* -------------------- Start Interview -------------------- */
   const startInterview = async () => {
-    const chat = await initializeChat();
-    chatRef.current = chat;
-
     setIsInterviewStarted(true);
     await startCamera();
     initRecognition();
 
     const greeting =
-      "Hello! I’m your AI interview assistant. To tailor your experience, please introduce yourself and tell me what type of interview you’d like to practice.";
+      "Hello! I’m your AI interview assistant. Please introduce yourself and tell me what type of interview you'd like to practice.";
 
     setTranscript([{ speaker: "ai", text: greeting, timestamp: new Date() }]);
     setLastAITranscript(greeting);
@@ -248,6 +209,7 @@ const InterviewApp: React.FC = () => {
     speakText(greeting);
   };
 
+  /* -------------------- Stop Interview -------------------- */
   const stopInterview = () => {
     setIsInterviewStarted(false);
     shouldListenRef.current = false;
@@ -265,9 +227,10 @@ const InterviewApp: React.FC = () => {
 
   useEffect(() => () => stopInterview(), []);
 
+  /* -------------------- Render -------------------- */
   return (
     <div className="flex flex-col items-center gap-6 p-6 w-full max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold text-blue-300 mb-4 text-center"></h1>
+      <h1 className="text-3xl font-bold text-blue-300 mb-4 text-center">AI Interview Platform</h1>
 
       <Controls
         isInterviewStarted={isInterviewStarted}
@@ -277,11 +240,7 @@ const InterviewApp: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         <div className="rounded-2xl shadow-xl p-4 bg-white">
-          <UserCard
-            videoRef={videoRef}
-            transcript={currentTranscript}
-            isListening={isListening}
-          />
+          <UserCard videoRef={videoRef} transcript={currentTranscript} isListening={isListening} />
         </div>
 
         <div className="rounded-2xl shadow-xl p-4 bg-white">

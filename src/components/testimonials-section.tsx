@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card"
 import { Star } from "lucide-react"
+import Image from "next/image"
 
 const testimonials = [
   {
@@ -63,10 +64,12 @@ export default function TestimonialsSection() {
 
                 {/* User info */}
                 <div className="flex items-center gap-3">
-                  <img
+                  <Image
                     src={testimonial.image || "/placeholder.svg"}
                     alt={testimonial.name}
                     className="w-12 h-12 rounded-full object-cover"
+                    height={24}
+                    width={24}
                   />
                   <div>
                     <p className="font-semibold text-[#222222]">{testimonial.name}</p>

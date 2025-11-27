@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Play, ArrowRight } from "lucide-react"
+import Image from "next/image"
 
 export default function HeroSection() {
   return (
@@ -84,10 +85,13 @@ export default function HeroSection() {
               {/* Decorative background elements */}
               <div className="absolute -inset-4 bg-gradient-to-br from-[#00C853]/20 to-[#00813E]/10 rounded-3xl blur-2xl"></div>
               <div className="relative glass-effect rounded-3xl p-8 glow-shadow overflow-hidden">
-                <img
+                <Image
                   src="/aaa.jpg"
                   alt="AI Interview Experience"
                   className="w-full rounded-2xl"
+                  height={400}
+                  width={400}
+                loading="lazy"
                 />
                 {/* Overlay accent */}
                 <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-[#00C853]/30 to-transparent rounded-full blur-3xl"></div>
