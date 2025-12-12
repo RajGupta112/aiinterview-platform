@@ -2,11 +2,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-if (!process.env.NEXT_PUBLIC_GOOGLE_API_KEY) {
+// Use a server-only env var (do NOT expose API key with NEXT_PUBLIC)
+const apiKey = process.env.GOOGLE_API_KEY;
+if (!apiKey) {
   throw new Error("GOOGLE_API_KEY not set on server");
 }
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GOOGLE_API_KEY);
+const genAI = new GoogleGenerativeAI(apiKey);
 
 // System prompt for interviewer
 const systemInstruction = `
@@ -23,6 +25,13 @@ export async function POST(req: NextRequest) {
     const message: string = String(body?.message || "");
     const historyRaw: any[] = Array.isArray(body?.history) ? body.history : [];
 
+    if (!message.trim()) {
+      return NextResponse.json(
+        { text: "Message is required." },
+        { status: 400 }
+      );
+    }
+
     // Convert frontend chat history → Gemini format
     const history = historyRaw.map((item: any) => ({
       role: item.speaker === "ai" ? "model" : "user",
@@ -31,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     // Initialize model with system instruction
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       systemInstruction,
     });
 
@@ -44,15 +53,40 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send new user message
-    const result = await chat.sendMessage(message);
+    let result;
+    try {
+      // This is where the 429 is thrown
+      result = await chat.sendMessage(message);
+    } catch (err: any) {
+      const status = err?.status || err?.response?.status;
+
+      // Handle quota / rate limit
+      if (status === 429) {
+        console.error("Gemini quota/rate limit error:", err);
+        return NextResponse.json(
+          {
+            text:
+              "AI quota or rate limit exceeded. Please wait a bit and try again.",
+          },
+          { status: 429 }
+        );
+      }
+
+      console.error("Gemini API error:", err);
+      return NextResponse.json(
+        {
+          text: "AI service error. Please try again later.",
+        },
+        { status: 502 }
+      );
+    }
 
     // Extract text safely
     let text = "";
     try {
       text = await result.response.text();
     } catch (e) {
-      console.error("⚠️ Failed extracting text:", e);
+      console.error("Failed extracting text:", e);
     }
 
     if (!text) {
@@ -61,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ text });
   } catch (err) {
-    console.error("❌ /api/chat error:", err);
+    console.error("/api/chat error:", err);
     return NextResponse.json(
       { text: "Server error. Please try again." },
       { status: 500 }
