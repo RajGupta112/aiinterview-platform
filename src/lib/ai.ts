@@ -1,4 +1,9 @@
-export const sendMessage = async (userMessage: string, history: any[] = []) => {
+export const sendMessage = async (
+  userMessage: string,
+  history: any[] = [],
+  role: string = "General",
+  resumeSummary: string = ""
+) => {
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -6,6 +11,8 @@ export const sendMessage = async (userMessage: string, history: any[] = []) => {
       body: JSON.stringify({
         message: userMessage,
         history,
+        role,
+        resumeSummary,
       }),
     });
 

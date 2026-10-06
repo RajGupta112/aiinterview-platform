@@ -11,9 +11,9 @@ import {
   LogOut,
   Menu,
   X,
-  FileText, // ✅ added icon for resume interview
+  FileText,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function DashboardClient({ user }: { user: any }) {
   const { data: session } = useSession();
@@ -21,7 +21,25 @@ export default function DashboardClient({ user }: { user: any }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = session?.user || user;
 
-  // ✅ Added "AI Resume Interview" to menu (nothing else changed)
+  type PastSession = {
+    id: string;
+    role: string | null;
+    startedAt: string;
+    endedAt: string | null;
+    score: number | null;
+    feedback: string | null;
+  };
+  const [history, setHistory] = useState<PastSession[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/interview/history")
+      .then((res) => (res.ok ? res.json() : { sessions: [] }))
+      .then((data) => setHistory(data.sessions || []))
+      .catch(() => setHistory([]))
+      .finally(() => setHistoryLoading(false));
+  }, []);
+
   const menu = [
     { name: "Dashboard", icon: <LayoutDashboard className="w-5 h-5" />, path: "/dashboard" },
     { name: "AI Interview", icon: <Bot className="w-5 h-5" />, path: "/interview" },
@@ -160,6 +178,55 @@ export default function DashboardClient({ user }: { user: any }) {
               </Card>
             ))}
           </div>
+        </section>
+
+        {/* Recent Interviews */}
+        <section>
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">
+            Recent Interviews
+          </h2>
+
+          {historyLoading && (
+            <p className="text-gray-500 text-sm">Loading history...</p>
+          )}
+
+          {!historyLoading && history.length === 0 && (
+            <Card className="bg-white border border-orange-100 rounded-xl">
+              <CardContent className="p-6 text-gray-600 text-sm">
+                No interviews yet. Start one above to see your results here.
+              </CardContent>
+            </Card>
+          )}
+
+          {!historyLoading && history.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {history.map((h) => (
+                <Card
+                  key={h.id}
+                  className="bg-white border border-orange-100 shadow-sm rounded-xl"
+                >
+                  <CardContent className="p-5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900">
+                        {h.role || "General"}
+                      </h3>
+                      <span className="text-orange-600 font-bold">
+                        {h.score ?? "-"}/100
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {new Date(h.startedAt).toLocaleDateString()}
+                    </p>
+                    {h.feedback && (
+                      <p className="text-sm text-gray-600 line-clamp-3">
+                        {h.feedback}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
       </main>
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { MicrophoneIcon } from "@/components/Icons";
 
 interface UserCardProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -15,28 +14,30 @@ const UserCard: React.FC<UserCardProps> = ({
   isListening,
 }) => {
   return (
-    <div className="bg-gradient-to-br from-blue-100 via-blue-50 to-white rounded-2xl p-6 
-                    flex flex-col shadow-lg border border-gray-300 backdrop-blur-sm">
+    <div className="relative flex flex-col h-full rounded-lg bg-[#0E1613] border border-[#1F2B24] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F2B24]">
+        <span className="text-sm text-[#EAF3EE] font-medium">You</span>
+        {isListening && (
+          <span className="flex items-center gap-1.5 text-xs text-[#00C853]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00C853] animate-pulse" />
+            Listening
+          </span>
+        )}
+      </div>
 
-      <h2 className="text-2xl font-semibold mb-4 text-center text-blue-700">You</h2>
-
-      <div className="relative w-full aspect-video bg-white/30 rounded-lg overflow-hidden mb-4 border border-blue-200 shadow-sm">
+      <div className="relative flex-1 bg-black">
         <video
           ref={videoRef}
           autoPlay
           muted
-          className="w-full h-full object-cover transform scale-x-[-1]"
-        ></video>
-
-        {isListening && (
-          <div className="absolute bottom-4 right-4 bg-red-500 rounded-full p-3 animate-pulse">
-            <MicrophoneIcon className="w-6 h-6 text-white" />
-          </div>
-        )}
+          className="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]"
+        />
       </div>
 
-      <div className="flex-grow bg-white/60 p-4 rounded-lg min-h-[6rem] border border-blue-200 shadow-inner">
-        <p className="text-slate-700 italic">{transcript || "..."}</p>
+      <div className="px-4 py-3 border-t border-[#1F2B24] min-h-[3.25rem] bg-[#0A0F0D]">
+        <p className="text-sm text-[#C7D6CD] leading-snug italic">
+          {transcript || "Your last answer will appear here."}
+        </p>
       </div>
     </div>
   );

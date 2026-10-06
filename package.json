@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.26",
@@ -32,6 +33,7 @@
     "next-auth": "^4.24.11",
     "node-fetch": "^3.3.2",
     "openai": "^6.10.0",
+    "pdf-parse": "^2.4.5",
     "prisma": "^6.18.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

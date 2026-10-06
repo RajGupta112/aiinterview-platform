@@ -1,5 +1,5 @@
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -8,16 +8,21 @@ generator client {
 }
 
 model User {
-  id       String @id @map("_id") @default(auto()) @db.ObjectId
-  name     String
-  email    String @unique
-  password String
+  id         String             @id @default(cuid())
+  name       String
+  email      String             @unique
+  password   String
+  interviews InterviewSession[]
 }
 
 model InterviewSession {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String?
-  startedAt DateTime @default(now())
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String?
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
   messages  Json[]
   score     Float?
+  feedback  String?
 }

@@ -19,42 +19,39 @@ export default function TranscriptLog({ transcript }: TranscriptLogProps) {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-10 bg-white rounded-xl shadow-lg border border-gray-700 backdrop-blur-sm">
-      <h3 className="text-xl font-semibold p-4 border-b border-gray-600 text-black-200">
-        Conversation Log
-      </h3>
-      <div className="p-4 space-y-4 max-h-64 overflow-y-auto">
-        {transcript.map((entry, index) => (
+    <div className="p-4 space-y-3 max-h-72 overflow-y-auto">
+      {transcript.map((entry, index) => (
+        <div
+          key={index}
+          className={`flex items-start gap-2.5 ${
+            entry.speaker === "user" ? "justify-end" : ""
+          }`}
+        >
+          {entry.speaker === "ai" && (
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#0B3D22] text-[#00C853] flex items-center justify-center text-xs font-semibold">
+              AI
+            </div>
+          )}
           <div
-            key={index}
-            className={`flex items-start gap-3 ${
-              entry.speaker === "user" ? "justify-end" : ""
+            className={`px-3.5 py-2.5 rounded-lg max-w-lg ${
+              entry.speaker === "ai"
+                ? "bg-[#121A16] border border-[#1F2B24]"
+                : "bg-[#0B3D22]/40 border border-[#1F2B24]"
             }`}
           >
-            {entry.speaker === "ai" && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold">
-                AI
-              </div>
-            )}
-            <div
-              className={`p-3 rounded-lg max-w-lg ${
-                entry.speaker === "ai" ? "bg-indigo-100" : "bg-green-100"
-              }`}
-            >
-              <p className="text-sm text-black-200">{entry.text}</p>
-              <p className="text-xs text-black-400 text-right mt-1">
-                {new Date(entry.timestamp).toLocaleTimeString()}
-              </p>
-            </div>
-            {entry.speaker === "user" && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold">
-                You
-              </div>
-            )}
+            <p className="text-sm text-[#EAF3EE] leading-snug">{entry.text}</p>
+            <p className="text-[10px] text-[#7C9488] text-right mt-1">
+              {new Date(entry.timestamp).toLocaleTimeString()}
+            </p>
           </div>
-        ))}
-        <div ref={endOfLogRef} />
-      </div>
+          {entry.speaker === "user" && (
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#1F2B24] text-[#EAF3EE] flex items-center justify-center text-xs font-semibold">
+              You
+            </div>
+          )}
+        </div>
+      ))}
+      <div ref={endOfLogRef} />
     </div>
   );
 }

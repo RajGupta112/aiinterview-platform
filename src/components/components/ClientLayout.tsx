@@ -11,7 +11,7 @@ export default function ClientLayout({
   const pathname = usePathname();
 
   // Define routes where Navbar should be hidden
-  const hideNavbarRoutes = ["/dashboard", "/interview"];
+  const hideNavbarRoutes = ["/dashboard", "/interview", "/resume-interview"];
   const hideNavbar = hideNavbarRoutes.some((route) => pathname.startsWith(route));
 
   return (
